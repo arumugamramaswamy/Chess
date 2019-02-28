@@ -3,36 +3,49 @@ import numpy
 class chessboard:
 
     def __init__(self):
+
         self.board = [["X" for x in range(8)]for x in range(8)]
         self.dictionary=dict()
+         
         for g in range(8):
-            self.board[1][g] = "wp"
+            self.board[1][g] = Pawn("B"+str(g+1),"w","wp"+str(g+1))
         for h in range(8):
-            self.board[6][h] = "bp"
-        self.board[0][0] = "wr"
-        self.board[0][7] = "wr"
-        self.board[0][6] = "wk"
-        self.board[0][1] = "wk"
-        self.board[0][2] = "wb"
-        self.board[0][5] = "wb"
-        self.board[0][3] = "wq"
-        self.board[0][4] = "w+"
-        self.board[7][0] = "br"
-        self.board[7][7] = "br"
-        self.board[7][1] = "bk"
-        self.board[7][2] = "bb"
-        self.board[7][3] = "bq"
-        self.board[7][4] = "b+"
-        self.board[7][5] = "bb"
-        self.board[7][6] = "bk"
+            self.board[6][h] = Pawn("G"+str(g+1),"b","bp"+str(g+1))
+
+        self.board[0][0] = Rook("A1","w","wr1")
+        self.board[0][7] = Rook("A8","w","wr2")
+        self.board[0][6] = Knight("A7","w","wk2")
+        self.board[0][1] = Knight("A2","w","wk1")
+        self.board[0][2] = Bishop("A3","w","wb1")
+        self.board[0][5] = Bishop("A6","w","wb2")
+        self.board[0][3] = Queen("A4","w","wq1")
+        self.board[0][4] = King("A5","w"," w+")
+        self.board[7][0] = Rook("H1","b","br1")
+        self.board[7][7] = Rook("H8","b","br2")
+        self.board[7][1] = Knight("H2","b","bk1")
+        self.board[7][2] = Bishop("H3","b","bb1")
+        self.board[7][3] = Queen("H4","b","bq1")
+        self.board[7][4] = King("H5","b"," b+")
+        self.board[7][5] = Bishop("H6","b","bb2")
+        self.board[7][6] = Knight("H7","b","bk2")
+
         for x in range(8):
             for y in range(8):
-                print(type(self.dictionary))
                 self.dictionary[str(str(chr(x+65))+str(y+1))]=self.board[x][y]
+
+        self.board_as_matrix = self.print_board() 
     
     def print_board(self):
-        board = numpy.array(self.board)
+        board = [["X" for x in range(8)]for x in range(8)]
+        for x in range(8):
+            for y in range(8):
+                if self.board[x][y]!="X":
+                    board[x][y] = self.board[x][y].name
+                else:
+                    board[x][y] = ".X."
+        board = numpy.array(board)
         print(board)
+        return(board)
 
 class Pawn:
     
@@ -184,5 +197,5 @@ class Knight:
         # needs to generate the places of possible attack
         pass
 
-a= chessboard()
-a.print_board()
+if __name__ == "__main__":
+    a= chessboard()
