@@ -1,4 +1,5 @@
 import numpy
+import time
 from copy import deepcopy
 
 def piece_possible_moves(piece):
@@ -14,8 +15,10 @@ def piece_possible_moves(piece):
         
         for temp_x_y in hypothetical_moves_list:
             temp_piece.move(retrieve_loc(temp_x_y))
-            
-            check = temp_piece.chessboard.wki.check_for_check()
+            if isinstance(piece,King):
+                check = temp_piece.check_for_check()
+            else:
+                check = temp_piece.chessboard.wki.check_for_check()
             if not check:
                 possible_moves.append(temp_x_y)
             temp_piece = deepcopy(piece)
@@ -23,7 +26,10 @@ def piece_possible_moves(piece):
         
         for temp_x_y in hypothetical_capture_list:
             temp_piece.capture(retrieve_loc(temp_x_y))
-            check = temp_piece.chessboard.wki.check_for_check()
+            if isinstance(piece,King):
+                check = temp_piece.check_for_check()
+            else:
+                check = temp_piece.chessboard.wki.check_for_check()
             if not check:
                 possible_captures.append(temp_x_y)
             temp_piece = deepcopy(piece)
@@ -32,8 +38,12 @@ def piece_possible_moves(piece):
     else:
 
         for temp_x_y in hypothetical_moves_list:
+
             temp_piece.move(retrieve_loc(temp_x_y))
-            check = temp_piece.chessboard.bki.check_for_check()
+            if isinstance(piece,King):
+                check = temp_piece.check_for_check()
+            else:
+                check = temp_piece.chessboard.bki.check_for_check()
             if not check:
                 possible_moves.append(temp_x_y)
             temp_piece = deepcopy(piece)
@@ -41,7 +51,10 @@ def piece_possible_moves(piece):
         
         for temp_x_y in hypothetical_capture_list:
             temp_piece.capture(retrieve_loc(temp_x_y))
-            check = temp_piece.chessboard.bki.check_for_check()
+            if isinstance(piece,King):
+                check = temp_piece.check_for_check()
+            else:
+                check = temp_piece.chessboard.bki.check_for_check()
             if not check:
                 possible_captures.append(temp_x_y)
             temp_piece = deepcopy(piece)
@@ -82,6 +95,7 @@ class empty:
     def __init__(self):
         self.color = "X"
         self.name = ".X."
+        self.emp = False
 
 # helps in reusing code
 
@@ -99,6 +113,7 @@ class chessboard:
 
     def __init__(self):
         # self.board stores the piece objects
+        self.turn = "w" # white
         self.board = [[empty() for x in range(8)]for x in range(8)]
         self.dictionary=dict()
 
@@ -111,14 +126,14 @@ class chessboard:
         
         wp1 = self.board[1][0]
         wp2 = self.board[1][1]
-        wp3 = self.board[1][2] = empty()
+        wp3 = self.board[1][2] 
         wp4 = self.board[1][3]
         wp5 = self.board[1][4]
         wp6 = self.board[1][5]
         wp7 = self.board[1][6]
         wp8 = self.board[1][7]
         #wr3 = self.board[3][4] = Rook("E4","w","wr3",self)
-        bb3 = self.board[3][0] = Bishop("A4","b","bb3",self)
+        #bb3 = self.board[4][0] = Bishop("A5","b","bb3",self)
 
         bp1 = self.board[6][0]
         bp2 = self.board[6][1]
@@ -134,10 +149,10 @@ class chessboard:
         self.board[0][0] = wr1 = Rook("A1", "w", "wr1", self)
         self.board[0][7] = wr2 = Rook("H1", "w", "wr2", self)
         self.board[0][6] = wk2 = Knight("G1", "w", "wk2", self)
-        #self.board[0][1] = wk1 = Knight("B1", "w", "wk1", self)
-        #self.board[0][2] = wb1 = Bishop("C1", "w", "wb1", self)
+        self.board[0][1] = wk1 = Knight("B1", "w", "wk1", self)
+        self.board[0][2] = wb1 = Bishop("C1", "w", "wb1", self)
         self.board[0][5] = wb2 = Bishop("F1", "w", "wb2", self)
-        #self.board[0][3] = wq1 = Queen("D1", "w", "wq1", self)
+        self.board[0][3] = wq1 = Queen("D1", "w", "wq1", self)
         self.board[0][4] = self.wki = King("E1", "w", "w+ ", self)
         self.board[7][0] = br1 = Rook("A8", "b", "br1", self)
         self.board[7][7] = br2 = Rook("H8", "b", "br2", self)
@@ -151,8 +166,8 @@ class chessboard:
         #test piece
         #self.board[2][0]= wr3 = Rook("C1", "w", "wr3", self)
 
-        self.white_piece_list = [wr1,wr2,wk2,wb2,self.wki,wp1,wp2,wp4,wp5,wp6,wp7,wp8]#,wk1,wb1,wq1,wp3]
-        self.black_piece_list = [br1,br2,bk1,bk2,bb1,bb2,bq1,self.bki,bp1,bp2,bp3,bp4,bp5,bp6,bp7,bp8,bb3]
+        self.white_piece_list = [wr1,wr2,wk2,wb2,self.wki,wp1,wp2,wp4,wp5,wp6,wp7,wp8,wk1,wb1,wq1,wp3]
+        self.black_piece_list = [br1,br2,bk1,bk2,bb1,bb2,bq1,self.bki,bp1,bp2,bp3,bp4,bp5,bp6,bp7,bp8]
 
         
         
@@ -169,7 +184,7 @@ class chessboard:
 
         self.board_as_matrix = self.print_board() 
 
-        self.white_pawns = [wp1,wp2,wp4,wp5,wp6,wp7,wp8]#,wp3]
+        self.white_pawns = [wp1,wp2,wp4,wp5,wp6,wp7,wp8,wp3]
         self.black_pawns = [bp1,bp2,bp3,bp4,bp5,bp6,bp7,bp8]
 
 
@@ -184,6 +199,12 @@ class chessboard:
         self.b_bishop_counter = 2
 
     # returns the board as a matrix(without objects) and also prints
+
+    def turn_switch(self):
+        if self.turn == "w":
+            self.turn = "b"
+        else:
+            self.turn = "w"
 
     def print_board(self):
         board = [["X" for x in range(8)]for x in range(8)]
@@ -225,8 +246,521 @@ class chessboard:
                 self.bki.no_of_moves+=len(piece.return_possible_moves()[1])        
         return all_possible_moves,all_possible_captures
 
+    def emp_reset(self):
+        if self.turn == "w":
+            for x in self.white_pawns:
+                x.emp = False
+            for x in self.board[1]:
+                if isinstance(x,empty):
+                    x.emp = False
+        elif self.turn == "b":
+            for x in self.black_pawns:
+                x.emp = False
+            for x in self.board[6]:
+                if isinstance(x,empty):
+                    x.emp = False
+        
     def move(self,chess_notation):
-        pass
+        chess_notation = chess_notation.replace("+","")
+        chess_notation = chess_notation.replace("#","")
+        if len(chess_notation)== 2:
+            final_loc = chess_notation.upper()
+            if self.turn == "w":
+                for x in self.white_pawns:
+                    for move_x_y in x.return_possible_moves()[0]:
+                        move_loc = retrieve_loc(move_x_y)
+                        if move_loc == final_loc:
+                            x.move(final_loc)
+                            self.turn_switch()
+                            break
+                    if self.turn == "b":
+                        break
+                if self.turn == "w":
+                    print("301 invalid move")    
+            else:
+                for x in self.black_pawns:
+                    for move_x_y in x.return_possible_moves()[0]:
+                        move_loc = retrieve_loc(move_x_y)
+                        if move_loc == final_loc:
+                            x.move(final_loc)
+                            self.turn_switch()
+                            break
+                    if self.turn == "w":
+                        break
+                if self.turn == "b":
+                    print("300 invalid move")
+        elif chess_notation == "O-O-O":
+            if self.turn == "w" and isinstance(self.board[0][0],Rook):
+                self.board[0][0].castling()
+            elif self.turn == "b" and isinstance(self.board[7][0],Rook):
+                self.board[7][0].castling()
+            else:
+                print("99 invalid move")
+
+        elif chess_notation == "O-O":
+            if self.turn == "w" and isinstance(self.board[0][7],Rook):
+                self.board[0][7].castling()
+            elif self.turn == "b" and isinstance(self.board[7][7],Rook):
+                self.board[7][7].castling()
+            else:
+                print("99 invalid move")
+        
+        elif "x" in chess_notation or "X" in chess_notation:
+            if chess_notation[0].isupper():
+                if chess_notation[0]=="Q":
+                    chess_notation = chess_notation[1:]
+                    chess_notation = chess_notation.upper()
+                    try:
+                        splitter = chess_notation.index("x")
+                    except:
+                        splitter = chess_notation.index("X")
+
+                    part1 = chess_notation[:splitter]
+                    part2 = chess_notation[splitter+1:]
+
+                    if len(part1)==1:
+                        if part1.isalpha():
+                            for x in range(8):
+                                if isinstance(self.board[x][ord(part1)-65],Queen)and self.board[x][ord(part1)-65].color == self.turn and self.board[x][ord(part1)-65].generate_attack_matrix()[retrieve_x_y(part2)[0]][retrieve_x_y(part2)[1]]==1:
+                                    self.board[x][ord(part1)-65].capture(part2)
+                                    self.turn_switch()
+                                    break
+                        else:
+                            for x in range(8):
+                                if isinstance(self.board[int(part1)][x],Queen)and self.board[int(part1)][x].color == self.turn and self.board[int(part1)][x].generate_attack_matrix()[retrieve_x_y(part2)[0]][retrieve_x_y(part2)[1]]==1:
+                                    self.board[int(part1)][x].capture(part2)
+                                    self.turn_switch()
+                                    break
+                    elif len(part1)==2:
+                        x_y_temp = retrieve_x_y(part1)
+                        self.board[x_y_temp[0]][x_y_temp[1]].capture(part2)
+                        self.turn_switch()
+                    else:
+                        x_y_temp2 = retrieve_x_y(part2)
+                        if self.turn == "w":
+                            for x in self.white_piece_list:
+                                if isinstance(x,Queen):
+                                    if x.generate_attack_matrix()[x_y_temp2[0]][x_y_temp2[1]]==1:
+                                        x.capture(part2)
+                                        self.turn_switch()
+                                        break
+                        else:
+                            for x in self.black_piece_list:
+                                if isinstance(x,Queen):
+                                    if x.generate_attack_matrix()[x_y_temp2[0]][x_y_temp2[1]]==1:
+                                        x.capture(part2)
+                                        self.turn_switch()
+                                        break
+
+                    # queen capturing
+                elif chess_notation[0]=="B":
+                    chess_notation = chess_notation[1:]
+                    chess_notation = chess_notation.upper()
+                    try:
+                        splitter = chess_notation.index("x")
+                    except:
+                        splitter = chess_notation.index("X")
+
+                    part1 = chess_notation[:splitter]
+                    part2 = chess_notation[splitter+1:]
+
+                    if len(part1)==1:
+                        if part1.isalpha():
+                            for x in range(8):
+                                if isinstance(self.board[x][ord(part1)-65],Bishop)and self.board[x][ord(part1)-65].color == self.turn and self.board[x][ord(part1)-65].generate_attack_matrix()[retrieve_x_y(part2)[0]][retrieve_x_y(part2)[1]]==1:
+                                    self.board[x][ord(part1)-65].capture(part2)
+                                    self.turn_switch()
+                                    break
+                        else:
+                            for x in range(8):
+                                if isinstance(self.board[int(part1)][x],Bishop)and self.board[int(part1)][x].color == self.turn and self.board[int(part1)][x].generate_attack_matrix()[retrieve_x_y(part2)[0]][retrieve_x_y(part2)[1]]==1:
+                                    self.board[int(part1)][x].capture(part2)
+                                    self.turn_switch()
+                                    break
+                    elif len(part1)==2:
+                        x_y_temp = retrieve_x_y(part1)
+                        self.board[x_y_temp[0]][x_y_temp[1]].capture(part2)
+                        self.turn_switch()
+                    else:
+                        x_y_temp2 = retrieve_x_y(part2)
+                        if self.turn == "w":
+                            for x in self.white_piece_list:
+                                if isinstance(x,Bishop):
+                                    if x.generate_attack_matrix()[x_y_temp2[0]][x_y_temp2[1]]==1:
+                                        x.capture(part2)
+                                        self.turn_switch()
+                                        break
+                        else:
+                            for x in self.black_piece_list:
+                                if isinstance(x,Bishop):
+                                    if x.generate_attack_matrix()[x_y_temp2[0]][x_y_temp2[1]]==1:
+                                        x.capture(part2)
+                                        self.turn_switch()
+                                        break
+
+
+                    # bishop capturing
+                elif chess_notation[0]=="N":
+                    chess_notation = chess_notation[1:]
+                    chess_notation = chess_notation.upper()
+                    try:
+                        splitter = chess_notation.index("x")
+                    except:
+                        splitter = chess_notation.index("X")
+
+                    part1 = chess_notation[:splitter]
+                    part2 = chess_notation[splitter+1:]
+
+                    if len(part1)==1:
+                        if part1.isalpha():
+                            for x in range(8):
+                                if isinstance(self.board[x][ord(part1)-65],Knight)and self.board[x][ord(part1)-65].color == self.turn and self.board[x][ord(part1)-65].generate_attack_matrix()[retrieve_x_y(part2)[0]][retrieve_x_y(part2)[1]]==1:
+                                    self.board[x][ord(part1)-65].capture(part2)
+                                    self.turn_switch()
+                                    break
+                        else:
+                            for x in range(8):
+                                if isinstance(self.board[int(part1)][x],Knight)and self.board[int(part1)][x].color == self.turn and self.board[int(part1)][x].generate_attack_matrix()[retrieve_x_y(part2)[0]][retrieve_x_y(part2)[1]]==1:
+                                    self.board[int(part1)][x].capture(part2)
+                                    self.turn_switch()
+                                    break
+                    elif len(part1)==2:
+                        x_y_temp = retrieve_x_y(part1)
+                        self.board[x_y_temp[0]][x_y_temp[1]].capture(part2)
+                        self.turn_switch()
+                    else:
+                        x_y_temp2 = retrieve_x_y(part2)
+                        if self.turn == "w":
+                            for x in self.white_piece_list:
+                                if isinstance(x,Knight):
+                                    if x.generate_attack_matrix()[x_y_temp2[0]][x_y_temp2[1]]==1:
+                                        x.capture(part2)
+                                        self.turn_switch()
+                                        break
+                        else:
+                            for x in self.black_piece_list:
+                                if isinstance(x,Knight):
+                                    if x.generate_attack_matrix()[x_y_temp2[0]][x_y_temp2[1]]==1:
+                                        x.capture(part2)
+                                        self.turn_switch()
+                                        break
+                    # Knight capturing
+                elif chess_notation[0]=="K":
+                    chess_notation = chess_notation[1:]
+                    chess_notation = chess_notation.upper()
+                    try:
+                        splitter = chess_notation.index("x")
+                    except:
+                        splitter = chess_notation.index("X")
+
+                    part1 = chess_notation[:splitter]
+                    part2 = chess_notation[splitter+1:]
+                    if self.turn == "w":
+                        self.wki.capture(part2)
+                        self.turn_switch()
+                    else:
+                        self.bki.capture(part2)
+                        self.turn_switch()
+                    # King capturing
+                elif chess_notation[0]=="R":
+                    chess_notation = chess_notation[1:]
+                    chess_notation = chess_notation.upper()
+                    try:
+                        splitter = chess_notation.index("x")
+                    except:
+                        splitter = chess_notation.index("X")
+
+                    part1 = chess_notation[:splitter]
+                    part2 = chess_notation[splitter+1:]
+
+                    if len(part1)==1:
+                        if part1.isalpha():
+                            for x in range(8):
+                                if isinstance(self.board[x][ord(part1)-65],Rook)and self.board[x][ord(part1)-65].color == self.turn and self.board[x][ord(part1)-65].generate_attack_matrix()[retrieve_x_y(part2)[0]][retrieve_x_y(part2)[1]]==1:
+                                    self.board[x][ord(part1)-65].capture(part2)
+                                    self.turn_switch()
+                                    break
+                        else:
+                            for x in range(8):
+                                if isinstance(self.board[int(part1)][x],Rook)and self.board[int(part1)][x].color == self.turn and self.board[int(part1)][x].generate_attack_matrix()[retrieve_x_y(part2)[0]][retrieve_x_y(part2)[1]]==1:
+                                    self.board[int(part1)][x].capture(part2)
+                                    self.turn_switch()
+                                    break
+                    elif len(part1)==2:
+                        x_y_temp = retrieve_x_y(part1)
+                        self.board[x_y_temp[0]][x_y_temp[1]].capture(part2)
+                        self.turn_switch()
+                    else:
+                        x_y_temp2 = retrieve_x_y(part2)
+                        if self.turn == "w":
+                            for x in self.white_piece_list:
+                                if isinstance(x,Rook):
+                                    if x.generate_attack_matrix()[x_y_temp2[0]][x_y_temp2[1]]==1:
+                                        x.capture(part2)
+                                        self.turn_switch()
+                                        break
+                        else:
+                            for x in self.black_piece_list:
+                                if isinstance(x,Rook):
+                                    if x.generate_attack_matrix()[x_y_temp2[0]][x_y_temp2[1]]==1:
+                                        x.capture(part2)
+                                        self.turn_switch()
+                                        break
+                    # Rook capturing
+            else:
+                chess_notation = chess_notation.upper()
+                try:
+                    splitter = chess_notation.index("x")
+                except:
+                    splitter = chess_notation.index("X")
+                part2 = chess_notation[splitter+1:]
+                promote =None
+                if "=" in chess_notation:
+                    part2=chess_notation[splitter+1:chess_notation.index("=")]
+                    promote = chess_notation[-1]
+                part1 = chess_notation[:splitter]
+                
+
+                if len(part1)==1:
+                    if part1.isalpha():
+                        for x in range(8):
+                            if isinstance(self.board[x][ord(part1)-65],Pawn) and self.board[x][ord(part1)-65].color == self.turn:
+                                self.board[x][ord(part1)-65].capture(part2,promoter =promote)
+                                self.turn_switch()
+                                break
+                    else:
+                        for x in range(8):
+                            if isinstance(self.board[int(part1)][x],Pawn) and self.board[int(part1)][x].color == self.turn:
+                                self.board[int(part1)][x].capture(part2,promoter= promote)
+                                self.turn_switch()
+                                break
+                elif len(part1)==2:
+                    x_y_temp = retrieve_x_y(part1)
+                    self.board[x_y_temp[0]][x_y_temp[1]].capture(part2,promote)
+                    self.turn_switch()
+
+                # pawn capturing
+
+        else:
+            if chess_notation[0].isupper():
+                if chess_notation[0]=="Q":
+                    chess_notation = chess_notation[1:]
+                    chess_notation = chess_notation.upper()
+
+
+                    part1 = chess_notation[:-2]
+                    part2 = chess_notation[-2:]
+
+                    if len(part1)==1:
+                        if part1.isalpha():
+                            for x in range(8):
+                                if isinstance(self.board[x][ord(part1)-65],Queen)and self.board[x][ord(part1)-65].generate_attack_matrix()[retrieve_x_y(part2)[0]][retrieve_x_y(part2)[1]]==1 and self.board[x][ord(part1)-65].color == self.turn:
+                                    self.board[x][ord(part1)-65].move(part2)
+                                    self.turn_switch()
+                                    break
+                        else:
+                            for x in range(8):
+                                if isinstance(self.board[int(part1)][x],Queen)and self.board[int(part1)][x].generate_attack_matrix()[retrieve_x_y(part2)[0]][retrieve_x_y(part2)[1]]==1 and self.board[int(part1)][x].color == self.turn:
+                                    self.board[int(part1)][x].move(part2)
+                                    self.turn_switch()
+                                    break
+                    elif len(part1)==2:
+                        x_y_temp = retrieve_x_y(part1)
+                        self.board[x_y_temp[0]][x_y_temp[1]].move(part2)
+                        self.turn_switch()
+                    else:
+                        x_y_temp2 = retrieve_x_y(part2)
+                        if self.turn == "w":
+                            for x in self.white_piece_list:
+                                if isinstance(x,Queen):
+                                    if x.generate_attack_matrix()[x_y_temp2[0]][x_y_temp2[1]]==1:
+                                        x.move(part2)
+                                        self.turn_switch()
+                                        break
+                        else:
+                            for x in self.black_piece_list:
+                                if isinstance(x,Queen):
+                                    if x.generate_attack_matrix()[x_y_temp2[0]][x_y_temp2[1]]==1:
+                                        x.move(part2)
+                                        self.turn_switch()
+                                        break
+
+                    # queen capturing
+                elif chess_notation[0]=="B":
+                    chess_notation = chess_notation[1:]
+                    chess_notation = chess_notation.upper()
+
+
+                    part1 = chess_notation[:-2]
+                    part2 = chess_notation[-2:]
+
+                    if len(part1)==1:
+                        if part1.isalpha():
+                            for x in range(8):
+                                if isinstance(self.board[x][ord(part1)-65],Bishop)and self.board[x][ord(part1)-65].color == self.turn and self.board[x][ord(part1)-65].generate_attack_matrix()[retrieve_x_y(part2)[0]][retrieve_x_y(part2)[1]]==1:
+                                    self.board[x][ord(part1)-65].move(part2)
+                                    self.turn_switch()
+                                    break
+                        else:
+                            for x in range(8):
+                                if isinstance(self.board[int(part1)][x],Bishop)and self.board[int(part1)][x].color == self.turn and self.board[int(part1)][x].generate_attack_matrix()[retrieve_x_y(part2)[0]][retrieve_x_y(part2)[1]]==1:
+                                    self.board[int(part1)][x].move(part2)
+                                    self.turn_switch()
+                                    break
+                    elif len(part1)==2:
+                        x_y_temp = retrieve_x_y(part1)
+                        self.board[x_y_temp[0]][x_y_temp[1]].move(part2)
+                        self.turn_switch()
+                    else:
+                        x_y_temp2 = retrieve_x_y(part2)
+                        if self.turn == "w":
+                            for x in self.white_piece_list:
+                                if isinstance(x,Bishop):
+                                    if x.generate_attack_matrix()[x_y_temp2[0]][x_y_temp2[1]]==1:
+                                        x.move(part2)
+                                        self.turn_switch()
+                                        break
+                        else:
+                            for x in self.black_piece_list:
+                                if isinstance(x,Bishop):
+                                    if x.generate_attack_matrix()[x_y_temp2[0]][x_y_temp2[1]]==1:
+                                        x.move(part2)
+                                        self.turn_switch()
+                                        break
+
+
+                    # bishop capturing
+                elif chess_notation[0]=="N":
+                    chess_notation = chess_notation[1:]
+                    chess_notation = chess_notation.upper()
+
+
+                    part1 = chess_notation[:-2]
+                    part2 = chess_notation[-2:]
+
+                    if len(part1)==1:
+                        if part1.isalpha():
+                            for x in range(8):
+                                if isinstance(self.board[x][ord(part1)-65],Knight)and self.board[x][ord(part1)-65].color == self.turn and self.board[x][ord(part1)-65].generate_attack_matrix()[retrieve_x_y(part2)[0]][retrieve_x_y(part2)[1]]==1:
+                                    self.board[x][ord(part1)-65].move(part2)
+                                    self.turn_switch()
+                                    break
+                        else:
+                            for x in range(8):
+                                if isinstance(self.board[int(part1)][x],Knight)and self.board[int(part1)][x].color == self.turn and self.board[int(part1)][x].generate_attack_matrix()[retrieve_x_y(part2)[0]][retrieve_x_y(part2)[1]]==1:
+                                    self.board[int(part1)][x].move(part2)
+                                    self.turn_switch()
+                                    break
+                    elif len(part1)==2:
+                        x_y_temp = retrieve_x_y(part1)
+                        self.board[x_y_temp[0]][x_y_temp[1]].move(part2)
+                        self.turn_switch()
+                    else:
+                        x_y_temp2 = retrieve_x_y(part2)
+                        if self.turn == "w":
+                            for x in self.white_piece_list:
+                                if isinstance(x,Knight):
+                                    if x.generate_attack_matrix()[x_y_temp2[0]][x_y_temp2[1]]==1:
+                                        x.move(part2)
+                                        self.turn_switch()
+                                        break
+                        else:
+                            for x in self.black_piece_list:
+                                if isinstance(x,Knight):
+                                    if x.generate_attack_matrix()[x_y_temp2[0]][x_y_temp2[1]]==1:
+                                        x.move(part2)
+                                        self.turn_switch()
+                                        break
+                    # Knight capturing
+                elif chess_notation[0]=="K":
+                    chess_notation = chess_notation[1:]
+                    chess_notation = chess_notation.upper()
+
+
+                    part1 = chess_notation[:-2]
+                    part2 = chess_notation[-2:]
+                    if self.turn == "w":
+                        self.wki.move(part2)
+                        self.turn_switch()
+                    else:
+                        self.bki.move(part2)
+                        self.turn_switch()
+                    # King capturing
+                elif chess_notation[0]=="R":
+                    chess_notation = chess_notation[1:]
+                    chess_notation = chess_notation.upper()
+
+
+                    part1 = chess_notation[:-2]
+                    part2 = chess_notation[-2:]
+
+
+                    if len(part1)==1:
+                        if part1.isalpha():
+                            for x in range(8):
+                                if isinstance(self.board[x][ord(part1)-65],Rook)and self.board[x][ord(part1)-65].color == self.turn and self.board[x][ord(part1)-65].generate_attack_matrix()[retrieve_x_y(part2)[0]][retrieve_x_y(part2)[1]]==1:
+                                    self.board[x][ord(part1)-65].move(part2)
+                                    self.turn_switch()
+                                    break
+                        else:
+                            for x in range(8):
+                                if isinstance(self.board[int(part1)][x],Rook)and self.board[int(part1)][x].color == self.turn and self.board[int(part1)][x].generate_attack_matrix()[retrieve_x_y(part2)[0]][retrieve_x_y(part2)[1]]==1:
+                                    self.board[int(part1)][x].move(part2)
+                                    self.turn_switch()
+                                    break
+                    elif len(part1)==2:
+                        x_y_temp = retrieve_x_y(part1)
+                        self.board[x_y_temp[0]][x_y_temp[1]].move(part2)
+                        self.turn_switch()
+                    else:
+                        x_y_temp2 = retrieve_x_y(part2)
+                        if self.turn == "w":
+                            for x in self.white_piece_list:
+                                if isinstance(x,Rook):
+                                    if x.generate_attack_matrix()[x_y_temp2[0]][x_y_temp2[1]]==1:
+                                        x.move(part2)
+                                        self.turn_switch()
+                                        break
+                        else:
+                            for x in self.black_piece_list:
+                                if isinstance(x,Rook):
+                                    if x.generate_attack_matrix()[x_y_temp2[0]][x_y_temp2[1]]==1:
+                                        x.move(part2)
+                                        self.turn_switch()
+                                        break
+                    # Rook capturing
+                
+            else:
+                print("= lul")
+                [final_loc,promote] = chess_notation.upper().split("=")
+                if self.turn == "w":
+                    for x in self.white_pawns:
+                        for move_x_y in x.return_possible_moves()[0]:
+                            if isinstance(move_x_y,tuple):
+                                move_x_y = move_x_y[0]
+                            move_loc = retrieve_loc(move_x_y)
+                            if move_loc == final_loc:
+                                x.move(final_loc,promoter=promote)
+                                self.turn_switch()
+                                break
+                        if self.turn == "b":
+                            break
+                    if self.turn == "w":
+                        print("301 invalid move")    
+                else:
+                    for x in self.black_pawns:
+                        for move_x_y in x.return_possible_moves()[0]:
+                            if isinstance(move_x_y,tuple):
+                                move_x_y =move_x_y[0]
+                            move_loc = retrieve_loc(move_x_y)
+                            if move_loc == final_loc:
+                                x.move(final_loc,promoter=promote)
+                                self.turn_switch()
+                                break
+                        if self.turn == "w":
+                            break
+                    if self.turn == "b":
+                        print("300 invalid move")
 
 class Pawn:
     
@@ -271,6 +805,7 @@ class Pawn:
 
                 # making the move
                 move_maker(self,[self.x_y[0]-2,self.x_y[1]])
+                self.chessboard.board[self.x_y[0]-1][self.x_y[1]].emp =True
 
             elif self.color == "w" and self.chessboard.board[self.x_y[0]+1][self.x_y[1]].color=="X" and self.chessboard.board[self.x_y[0]+2][self.x_y[1]].color=="X":  
                 
@@ -279,6 +814,7 @@ class Pawn:
 
                 # making the move
                 move_maker(self,[self.x_y[0]+2,self.x_y[1]])
+                self.chessboard.board[self.x_y[0]+1][self.x_y[1]].emp =True
 
             else:
                 print("1 invalid move")
@@ -290,7 +826,7 @@ class Pawn:
         else:
             print("2 invalid move")
         
-    def move_sub(self):
+    def move_sub(self,promote = None):
         dstep = self.d_step
         self.d_step = False
         if self.color == "b" and self.chessboard.board[self.x_y[0]-1][self.x_y[1]].color=="X":
@@ -317,10 +853,10 @@ class Pawn:
         self.loc = retrieve_loc(self.x_y)
 
         # promtions
-        if self.x_y[0] == 7 and self.color=="b":
-            self.promote()
-        elif self.x_y[0] == 0 and self.color=="w":
-            self.promote()
+        if self.x_y[0] == 7 and self.color=="w":
+            self.promote(promo = promote)
+        elif self.x_y[0] == 0 and self.color=="b":
+            self.promote(promote = promote)
 
     # first checks for piece colour
     # if white:
@@ -331,34 +867,48 @@ class Pawn:
     # if black:
     # 1-4 repeated for black
 
-    def capture(self,final_location):
+    def capture(self,final_location,promoter =None):
         self.d_step = False
         attack_matrix = self.generate_attack_matrix()
         final_x_y = retrieve_x_y(final_location)
         if self.color == "w":
     
 
-            if self.x_y[1]!=7 and self.chessboard.board[self.x_y[0]+1][self.x_y[1]+1].color == "b" and final_location == retrieve_loc([self.x_y[0]+1,self.x_y[1]+1]):
-                
-                self.chessboard.remove_piece(self.chessboard.board[final_x_y[0]][final_x_y[1]])
+            if self.x_y[1]!=7 and (self.chessboard.board[self.x_y[0]+1][self.x_y[1]+1].color == "b" or self.chessboard.board[self.x_y[0]+1][self.x_y[1]+1].emp) and final_location == retrieve_loc([self.x_y[0]+1,self.x_y[1]+1]):
+                if isinstance(self.chessboard.board[self.x_y[0]+1][self.x_y[1]+1],empty):
+                    self.chessboard.remove_piece(self.chessboard.board[self.x_y[0]][final_x_y[1]])
+                    self.chessboard.board[self.x_y[0]][final_x_y[1]] = empty()
+                else:                
+                    self.chessboard.remove_piece(self.chessboard.board[final_x_y[0]][final_x_y[1]])
                 move_maker(self,[self.x_y[0]+1,self.x_y[1]+1])
 
-            elif self.x_y[1]!=0 and self.chessboard.board[self.x_y[0]+1][self.x_y[1]-1].color == "b" and final_location == retrieve_loc([self.x_y[0]+1,self.x_y[1]-1]):
-                
-                self.chessboard.remove_piece(self.chessboard.board[final_x_y[0]][final_x_y[1]])
+            elif self.x_y[1]!=0 and (self.chessboard.board[self.x_y[0]+1][self.x_y[1]-1].color == "b" or self.chessboard.board[self.x_y[0]+1][self.x_y[1]-1].emp) and final_location == retrieve_loc([self.x_y[0]+1,self.x_y[1]-1]):
+                if isinstance(self.chessboard.board[self.x_y[0]+1][self.x_y[1]-1],empty):
+                    self.chessboard.remove_piece(self.chessboard.board[self.x_y[0]][final_x_y[1]])
+                    self.chessboard.board[self.x_y[0]][final_x_y[1]] = empty()
+                else:                
+                    self.chessboard.remove_piece(self.chessboard.board[final_x_y[0]][final_x_y[1]])
                 move_maker(self,[self.x_y[0]+1,self.x_y[1]-1])
             else:
                 print("4 invalid move")
                 
         elif self.color == "b":
             
-            if self.x_y[1]!=0 and self.chessboard.board[self.x_y[0]-1][self.x_y[1]-1].color == "w" and final_location == retrieve_loc([self.x_y[0]-1,self.x_y[1]-1]):
-                self.chessboard.remove_piece(self.chessboard.board[final_x_y[0]][final_x_y[1]])
+            if self.x_y[1]!=0 and (self.chessboard.board[self.x_y[0]-1][self.x_y[1]-1].color == "w" or self.chessboard.board[self.x_y[0]-1][self.x_y[1]-1].emp) and final_location == retrieve_loc([self.x_y[0]-1,self.x_y[1]-1]):
+                if isinstance(self.chessboard.board[self.x_y[0]-1][self.x_y[1]-1],empty):
+                    self.chessboard.remove_piece(self.chessboard.board[self.x_y[0]][final_x_y[1]])
+                    self.chessboard.board[self.x_y[0]][final_x_y[1]] = empty()
+                else:
+                    self.chessboard.remove_piece(self.chessboard.board[final_x_y[0]][final_x_y[1]])
                 move_maker(self,[self.x_y[0]-1,self.x_y[1]-1])
                 
 
-            elif self.x_y[1]!=7 and self.chessboard.board[self.x_y[0]-1][self.x_y[1]+1].color == "w" and final_location == retrieve_loc([self.x_y[0]-1,self.x_y[1]+1]):
-                self.chessboard.remove_piece(self.chessboard.board[final_x_y[0]][final_x_y[1]])
+            elif self.x_y[1]!=7 and (self.chessboard.board[self.x_y[0]-1][self.x_y[1]+1].color == "w" or self.chessboard.board[self.x_y[0]-1][self.x_y[1]+1].emp) and final_location == retrieve_loc([self.x_y[0]-1,self.x_y[1]+1]):
+                if isinstance(self.chessboard.board[self.x_y[0]-1][self.x_y[1]+1],empty):
+                    self.chessboard.remove_piece(self.chessboard.board[self.x_y[0]][final_x_y[1]])
+                    self.chessboard.board[self.x_y[0]][final_x_y[1]] = empty()
+                else:
+                    self.chessboard.remove_piece(self.chessboard.board[final_x_y[0]][final_x_y[1]])
                 move_maker(self,[self.x_y[0]-1,self.x_y[1]+1])
                 
 
@@ -369,9 +919,9 @@ class Pawn:
 
         # promotions
         if self.x_y[0] == 7 and self.color=="w":
-            self.promote()
+            self.promote(promo = promoter)
         elif self.x_y[0] == 0 and self.color=="b":
-            self.promote()
+            self.promote(promo = promoter)
 
     # needs to generate the places of possible attack
         
@@ -380,31 +930,31 @@ class Pawn:
         attack_matrix = [[0 for x in range(8)] for y in range(8)]
 
         if self.color == "w":
-
-            if self.x_y[1]!=7:
+            
+            if self.x_y[1]!=7 and self.x_y[0]!=7:
                 attack_matrix[self.x_y[0]+1][self.x_y[1]+1] = 1
-            if self.loc[1]!=0:
+            if self.loc[1]!=0 and self.x_y[0]!=7:
                 attack_matrix[self.x_y[0]+1][self.x_y[1]-1] = 1
 
         else:
 
-            if self.x_y[1]!=7:
+            if self.x_y[1]!=7 and self.x_y[0]!=0:
                 attack_matrix[self.x_y[0]-1][self.x_y[1]+1] = 1
-            if self.x_y[1]!=0:
+            if self.x_y[1]!=0 and self.x_y[0]!=0:
                 attack_matrix[self.x_y[0]-1][self.x_y[1]-1] = 1
         
         return attack_matrix
         
     # change dictionary values
 
-    def promote(self):
+    def promote(self,promo = None):
         
         while True:
-
-            promo = input("q/r/k/b")
+            if promo == None:
+                promo = input("Q/R/K/B")
 
             #promote to queen
-            if promo == "q":
+            if promo == "Q":
                 if self.color == "w":
                     self.chessboard.remove_piece(self)
                     self.chessboard.white_piece_list.append(Queen(self.loc,self.color,self.color+"q"+str(self.chessboard.w_queen_counter+1),self.chessboard))
@@ -420,7 +970,7 @@ class Pawn:
                 break
             
             #promote to rook
-            elif promo == "r":
+            elif promo == "R":
                 if self.color == "w":
                     self.chessboard.remove_piece(self)
                     self.chessboard.white_piece_list.append(Rook(self.loc,self.color,self.color+"q"+str(self.chessboard.w_rook_counter+1),self.chessboard))
@@ -436,7 +986,7 @@ class Pawn:
                 break
 
             #promote to knight            
-            elif promo == "k":
+            elif promo == "N":
                 if self.color == "w":
                     self.chessboard.remove_piece(self)
                     self.chessboard.white_piece_list.append(Knight(self.loc,self.color,self.color+"q"+str(self.chessboard.w_rook_counter+1),self.chessboard))
@@ -452,7 +1002,7 @@ class Pawn:
                 break
 
             #promote to bishop            
-            elif promo == "b":
+            elif promo == "B":
                 if self.color == "w":
                     self.chessboard.remove_piece(self)
                     self.chessboard.white_piece_list.append(Bishop(self.loc,self.color,self.color+"q"+str(self.chessboard.w_rook_counter+1),self.chessboard))
@@ -473,40 +1023,42 @@ class Pawn:
         attack_matrix = self.generate_attack_matrix()
         
         if self.color == "w":
-            if self.chessboard.board[self.x_y[0]+1][self.x_y[1]].color == "X":
+            if self.x_y[0]!=7 and self.chessboard.board[self.x_y[0]+1][self.x_y[1]].color == "X":
                 hypothetical_moves_list.append([self.x_y[0]+1,self.x_y[1]])
                 if self.d_step and self.chessboard.board[self.x_y[0]+2][self.x_y[1]].color == "X":
                     hypothetical_moves_list.append([self.x_y[0]+2,self.x_y[1]])
-            if self.x_y[1]!=7 and self.chessboard.board[self.x_y[0]+1][self.x_y[1]+1].color == "b":
+            if self.x_y[0]!=7 and self.x_y[1]!=7 and (self.chessboard.board[self.x_y[0]+1][self.x_y[1]+1].color == "b" or self.chessboard.board[self.x_y[0]+1][self.x_y[1]+1].emp):
                 hypothetical_capture_list.append([self.x_y[0]+1,self.x_y[1]+1])
-            if self.x_y[1]!=0 and self.chessboard.board[self.x_y[0]+1][self.x_y[1]-1].color == "b":
+            if self.x_y[0]!=7 and self.x_y[1]!=0 and (self.chessboard.board[self.x_y[0]+1][self.x_y[1]-1].color == "b" or self.chessboard.board[self.x_y[0]+1][self.x_y[1]-1].emp):
                 hypothetical_capture_list.append([self.x_y[0]+1,self.x_y[1]-1])
         
         elif self.color == "b":
-            if self.chessboard.board[self.x_y[0]-1][self.x_y[1]].color == "X":
+            if self.x_y[0]!=0 and self.chessboard.board[self.x_y[0]-1][self.x_y[1]].color == "X":
                 hypothetical_moves_list.append([self.x_y[0]-1,self.x_y[1]])
                 if self.d_step and self.chessboard.board[self.x_y[0]-2][self.x_y[1]].color == "X":
                     hypothetical_moves_list.append([self.x_y[0]-2,self.x_y[1]])
-            if self.x_y[1]!=7 and self.chessboard.board[self.x_y[0]-1][self.x_y[1]+1].color == "w":
+            if self.x_y[0]!=0 and self.x_y[1]!=7 and (self.chessboard.board[self.x_y[0]-1][self.x_y[1]+1].color == "w" or self.chessboard.board[self.x_y[0]-1][self.x_y[1]+1].emp):
                 hypothetical_capture_list.append([self.x_y[0]-1,self.x_y[1]+1])
-            if self.x_y[1]!=0 and self.chessboard.board[self.x_y[0]-1][self.x_y[1]-1].color == "w":
+            if self.x_y[0]!=0 and self.x_y[1]!=0 and (self.chessboard.board[self.x_y[0]-1][self.x_y[1]-1].color == "w" or self.chessboard.board[self.x_y[0]-1][self.x_y[1]-1].emp):
                 hypothetical_capture_list.append([self.x_y[0]-1,self.x_y[1]-1])
 
         return hypothetical_moves_list,hypothetical_capture_list
 
-    def move(self,final_location):
+    def move(self,final_location,promoter=None):
+
+
 
         final_x_y = retrieve_x_y(final_location)
         if self.color =="w":
             if final_x_y==[self.x_y[0]+1,self.x_y[1]]:
-                self.move_sub()
+                self.move_sub(promote=promoter)
             elif final_x_y ==[self.x_y[0]+2,self.x_y[1]]:
                 self.move_d_step()
             else:
                 print("6 invalid move")
         elif self.color =="b":
             if final_x_y==[self.x_y[0]-1,self.x_y[1]]:
-                self.move_sub()
+                self.move_sub(promote=promoter)
             elif final_x_y ==[self.x_y[0]-2,self.x_y[1]]:
                 self.move_d_step()
             else:
@@ -526,41 +1078,77 @@ class Pawn:
         if self.color == "w":
             
             for temp_x_y in hypothetical_moves_list:
-                temp_self.move(retrieve_loc(temp_x_y))
-                #print(self.chessboard == temp_self.chessboard)
-                check = temp_self.chessboard.wki.check_for_check()
-                if not check:
-                    possible_moves.append(temp_x_y)
-                temp_self = deepcopy(self)
-                temp_self_chessboard = deepcopy(self.chessboard)
+                if temp_x_y[0] == 7:
+                    for x in "QNRB":
+                        temp_self.move(retrieve_loc(temp_x_y),x)
+                        check = temp_self.chessboard.wki.check_for_check()
+                        if not check:
+                            possible_moves.append((temp_x_y,x))
+                        temp_self = deepcopy(self)
+                        temp_self_chessboard = deepcopy(self.chessboard)
+                else:
+                    temp_self.move(retrieve_loc(temp_x_y))
+                    #print(self.chessboard == temp_self.chessboard)
+                    check = temp_self.chessboard.wki.check_for_check()
+                    if not check:
+                        possible_moves.append(temp_x_y)
+                    temp_self = deepcopy(self)
+                    temp_self_chessboard = deepcopy(self.chessboard)
             
             
             for temp_x_y in hypothetical_capture_list:
-                temp_self.capture(retrieve_loc(temp_x_y))
-                check = temp_self.chessboard.wki.check_for_check()
-                if not check:
-                    possible_captures.append(temp_x_y)
-                temp_self = deepcopy(self)
-                temp_self.chessboard = deepcopy(self.chessboard)
+                if temp_x_y[0] == 7:
+                    for x in "QNRB":
+                        temp_self.capture(retrieve_loc(temp_x_y),x)
+                        check = temp_self.chessboard.wki.check_for_check()
+                        if not check:
+                            possible_captures.append((temp_x_y,x))
+                        temp_self = deepcopy(self)
+                        temp_self_chessboard = deepcopy(self.chessboard)
+                else:
+                    temp_self.capture(retrieve_loc(temp_x_y))
+                    check = temp_self.chessboard.wki.check_for_check()
+                    if not check:
+                        possible_captures.append(temp_x_y)
+                    temp_self = deepcopy(self)
+                    temp_self.chessboard = deepcopy(self.chessboard)
         
         else:
 
             for temp_x_y in hypothetical_moves_list:
-                temp_self.move(retrieve_loc(temp_x_y))
-                check = temp_self.chessboard.bki.check_for_check()
-                if not check:
-                    possible_moves.append(temp_x_y)
-                temp_self = deepcopy(self)
-                temp_self.chessboard = deepcopy(self.chessboard)
+                if temp_x_y[0] == 0:
+                    for x in "QNRB":
+                        temp_self.move(retrieve_loc(temp_x_y),x)
+                        check = temp_self.chessboard.bki.check_for_check()
+                        if not check:
+                            possible_moves.append((temp_x_y,x))
+                        temp_self = deepcopy(self)
+                        temp_self_chessboard = deepcopy(self.chessboard)
+                else:
+                    temp_self.move(retrieve_loc(temp_x_y))
+                    check = temp_self.chessboard.bki.check_for_check()
+                    if not check:
+                        possible_moves.append(temp_x_y)
+                    temp_self = deepcopy(self)
+                    temp_self.chessboard = deepcopy(self.chessboard)
             
 
             for temp_x_y in hypothetical_capture_list:
-                temp_self.capture(retrieve_loc(temp_x_y))
-                check = temp_self.chessboard.bki.check_for_check()
-                if not check:
-                    possible_captures.append(temp_x_y)
-                temp_self = deepcopy(self)
-                temp_self.chessboard = deepcopy(self.chessboard)
+                if temp_x_y[0] == 0:
+                    for x in "QNRB":
+                        temp_self.move(retrieve_loc(temp_x_y),x)
+                        check = temp_self.chessboard.bki.check_for_check()
+                        if not check:
+                            possible_captures.append((temp_x_y,x))
+                        temp_self = deepcopy(self)
+                        temp_self_chessboard = deepcopy(self.chessboard)
+                else:
+                    temp_self.capture(retrieve_loc(temp_x_y))
+                    check = temp_self.chessboard.bki.check_for_check()
+                    if not check:
+                        possible_captures.append(temp_x_y)
+                    temp_self = deepcopy(self)
+                    temp_self.chessboard = deepcopy(self.chessboard)
         
         return possible_moves, possible_captures
 
@@ -576,6 +1164,7 @@ class Rook:
         self.name = name
         self.chessboard = chessboard
         self.x_y = retrieve_x_y(self.loc)
+        self.emp = False
 
     # can't castle under check and while attack between
 
@@ -604,11 +1193,11 @@ class Rook:
                     no_castle = False
                     for x in self.chessboard.black_piece_list:
                         attack_matrix = x.generate_attack_matrix()
-                        print(attack_matrix[0][3]==1)
                         if attack_matrix[0][2]==1 or attack_matrix[0][3]==1 or attack_matrix[0][4]==1:
                             no_castle = True
                             break
                     if not no_castle:
+                        self.chessboard.turn_switch()
                         move_maker(self.chessboard.wki,[0,2])
                         move_maker(self,[0,3])
                         self.castle = False
@@ -624,6 +1213,7 @@ class Rook:
                             no_castle = True
                             break
                     if not no_castle:
+                        self.chessboard.turn_switch()
                         move_maker(self.chessboard.wki,[0,6])
                         move_maker(self,[0,5])
                         self.castle = False
@@ -658,6 +1248,7 @@ class Rook:
                             no_castle = True
                             break
                     if not no_castle:
+                        self.chessboard.turn_switch()
                         move_maker(self.chessboard.bki,[7,2])
                         move_maker(self,[7,3])
                         self.castle = False
@@ -672,7 +1263,8 @@ class Rook:
                             no_castle = True
                             break
                     if not no_castle:
-                        move_maker(self.chessboard.wki,[7,6])
+                        self.chessboard.turn_switch()
+                        move_maker(self.chessboard.bki,[7,6])
                         move_maker(self,[7,5])
                         self.castle = False
                         self.chessboard.bki.castle = False
@@ -762,8 +1354,84 @@ class Rook:
         return attack_matrix
 
     def return_possible_moves(self):
+        total_possible_moves = piece_possible_moves(self)
+        possible_moves = total_possible_moves[0]
         
-        return piece_possible_moves(self)
+        if self.color == "w" and self.castle and self.chessboard.wki.castle:
+            emptyness =False
+            minimum = min(self.x_y[1],self.chessboard.wki.x_y[1])
+            spaces = abs(self.x_y[1]-self.chessboard.wki.x_y[1])-1
+            count = 0
+
+            # checking whether the spaces between the king and rook are empty
+
+            for x in range(spaces):
+                if self.chessboard.board[0][minimum + x+1].color == "X":
+                    count+=1
+            
+            
+
+            if count == spaces:
+                emptyness = True
+            
+            if emptyness:
+                
+                if minimum == self.x_y[1]:
+                    no_castle = False
+                    for x in self.chessboard.black_piece_list:
+                        attack_matrix = x.generate_attack_matrix()
+                        if attack_matrix[0][2]==1 or attack_matrix[0][3]==1 or attack_matrix[0][4]==1:
+                            no_castle = True
+                            break
+                    if not no_castle:
+                        possible_moves.append("O-O-O")      
+
+                else:
+                    no_castle = False
+                    for x in self.chessboard.black_piece_list:
+                        attack_matrix = x.generate_attack_matrix()
+                        if attack_matrix[0][6]==1 or attack_matrix[0][5]==1 or attack_matrix[0][4]==1:
+                            no_castle = True
+                            break
+                    if not no_castle:
+                        possible_moves.append("O-O")
+
+        elif self.color == "b" and self.castle and self.chessboard.bki.castle:
+            emptyness = False
+            minimum = min(self.x_y[1],self.chessboard.bki.x_y[1])
+            spaces = abs(self.x_y[1]-self.chessboard.bki.x_y[1])-1
+            count = 0
+
+            # checking whether the spaces between the king and rook are empty
+
+            for x in range(spaces):
+                if self.chessboard.board[7][minimum + x+1].color == "X":
+                    count+=1
+            
+            if count == spaces:
+                emptyness = True
+                
+            if emptyness:
+                if minimum == self.x_y[1]:
+                    no_castle = False
+                    for x in self.chessboard.white_piece_list:
+                        attack_matrix = x.generate_attack_matrix()
+                        if attack_matrix[7][2]==1 or attack_matrix[7][3]==1 or attack_matrix[7][4]==1:
+                            no_castle = True
+                            break
+                    if not no_castle:
+                        possible_moves.append("O-O-O")
+                else:
+                    no_castle = False
+                    for x in self.chessboard.white_piece_list:
+                        attack_matrix = x.generate_attack_matrix()
+                        if attack_matrix[7][6]==1 or attack_matrix[7][5]==1 or attack_matrix[7][4]==1:
+                            no_castle = True
+                            break
+                    if not no_castle:
+                        possible_moves.append("O-O")
+
+        return possible_moves,total_possible_moves[1]
 
     def update(self,chessboard):
         self.chessboard = chessboard
@@ -778,6 +1446,7 @@ class King:
         self.chessboard = chessboard
         self.x_y = retrieve_x_y(self.loc)
         self.no_of_moves = 0
+        self.emp = False
 
     # returns True if there is a check
 
@@ -789,7 +1458,9 @@ class King:
                 if attack_matrix[self.x_y[0]][self.x_y[1]]==1:
                     check = True
                     break
+        
         if self.color == "b":
+            
             for x in self.chessboard.white_piece_list:
                 attack_matrix = x.generate_attack_matrix()
                 if attack_matrix[self.x_y[0]][self.x_y[1]]==1:
@@ -886,7 +1557,7 @@ class King:
         
         return attack_matrix
         
-    def check_for_checkmate():
+    def check_for_checkmate(self):
         if self.no_of_moves == 0:
             return True
     
@@ -903,6 +1574,7 @@ class Queen:
         self.loc = start_loc
         self.color = color
         self.name = name
+        self.emp = False
         self.chessboard = chessboard
         self.x_y = retrieve_x_y(self.loc)
         
@@ -1019,6 +1691,8 @@ class Bishop:
     def __init__(self, start_loc, color, name, chessboard):
         self.loc = start_loc
         self.color = color
+
+        self.emp = False
         self.name = name
         self.chessboard = chessboard
         self.x_y = retrieve_x_y(self.loc)
@@ -1062,12 +1736,10 @@ class Bishop:
         attack_matrix = [[0 for x in range(8)] for x in range(8)]
         x= self.x_y[0]
         y= self.x_y[1]
-        print(x<7 and y<7)
         while x<7 and y<7:
 
             y+=1
             x+=1
-            print(x,y,retrieve_loc((x,y)))
             attack_matrix[x][y]=1
             if self.chessboard.board[x][y].color!="X":
                 break
@@ -1110,6 +1782,7 @@ class Knight:
         self.loc = start_loc
         self.color = color
         self.name = name
+        self.emp = False
         self.chessboard = chessboard
         self.x_y = retrieve_x_y(self.loc)
         
@@ -1182,17 +1855,46 @@ class Knight:
     def update(self,chessboard):
         self.chessboard = chessboard
 
-if __name__ == "__main__":
+def Game(movelist):
+
+    Checkmate= False
     a= chessboard()
-    a.white_piece_list[0].castling()
+    for move in movelist:
+        if a.turn == "w":
+            print("white's turn")
+        else:
+            print("black's turn")
+
+        if a.turn == "w":
+            a.move(move)
+
+            a.color_all_possible_moves("b")
+            check = a.bki.check_for_check()
+            if check:
+                Checkmate = a.bki.check_for_checkmate()
+                
+                if Checkmate:
+                    print("Checkmate! white wins")
+                    break
+                else:
+                    print("check!")
+        else:
+            a.move(move)
+
+            a.color_all_possible_moves("w")
+            check = a.wki.check_for_check()
+            if check:
+                Checkmate = a.wki.check_for_checkmate()
+                if Checkmate:
+                    print("Checkmate! black wins")
+                    break
+                else:
+                    print("check")
+        a.print_board()
     a.print_board()
-    '''for x in a.dictionary.keys():
-        print(x,":",a.dictionary[x][0].name)
-    print(a.board[0][3].color,numpy.array(a.black_piece_list[-1].generate_attack_matrix()),a.black_piece_list[-1].name,a.black_piece_list[-1].loc,a.black_piece_list[-1].x_y)'''
 
+movelist = "e3 e6 d4 d6 Bd3 c6 Nf3 Be7 Nc3 Nf6 Bd2 Bd7 Qe2 c5 dxc5 dxc5 O-O b6 Rfe1 Bc6 e4 O-O e5 Nd5 Nxd5 Qxd5 Bc4 Qd7 Rad1 Qb7 Bg5 Re8 Bxe7 Rxe7 Rd8+ Re8 Red1 Bd5 Rxe8#".split(" ")
 
-    '''p = a.color_all_possible_moves("b")
-    print(p[0])
-    print(p[1])'''
+if __name__ == "__main__":
+    Game(movelist)
 
-    
